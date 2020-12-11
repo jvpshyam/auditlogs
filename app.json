@@ -1,0 +1,22 @@
+{
+  "name": "Audit Logs",
+  "description": "Simple Java application to connect to an EMP stream from Salesforce",
+  "keywords": [
+    "java"
+  ],
+  "env": {
+    "SF_USER": {
+      "description": "The salesforce user you are going to login with.",
+      "value": "jandhyala.shyam@tieto.com"
+    },
+    "SF_PASS": {
+      "description": "Password (and security token concatenated if required).",
+      "value": "shyam1983"
+    },
+    "SF_TOPIC" : {
+      "description":"This is the name of the topic you wish this worker to subscribe to",
+      "value":"/data/accountchangeevent"
+    }
+  },
+  "website": "https://www.heroku.com"
+}

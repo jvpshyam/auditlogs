@@ -14,6 +14,12 @@
 	<name>auditlogs</name>
 	<description>Demo project for Spring Boot</description>
 
+	<scm>
+		<connection>scm:git:git@github.com:jvpshyam/auditlogs.git</connection>
+		<developerConnection>scm:git:git@github.com:jvpshyam/auditlogs.git</developerConnection>
+		<url>https://github.com/jvpshyam/auditlogs</url>
+	</scm>
+
 	<properties>
 		<java.version>1.8</java.version>
 		<module.main.class>com.example.auditlogs.auditlogs.AuditlogsApplication</module.main.class>
