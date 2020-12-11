@@ -13,6 +13,8 @@ import com.salesforce.emp.connector.TopicSubscription;
 import com.salesforce.emp.connector.example.BearerTokenProvider;
 import org.bson.Document;
 import org.eclipse.jetty.util.ajax.JSON;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
@@ -33,6 +35,8 @@ import static com.salesforce.emp.connector.LoginHelper.login;
 })
 public class AuditlogsApplication {
 
+	private static Logger LOG = LoggerFactory.getLogger(AuditlogsApplication.class);
+
 	public static void main(String[] args) {
 
 		try{
@@ -51,18 +55,28 @@ public class AuditlogsApplication {
 			MongoDatabase database = mongoClient.getDatabase("auditlogs");
 			MongoCollection<Document> table = database.getCollection("events");
 
-			if (args.length < 3 || args.length > 4) {
-				System.err.println("Usage: LoginExample username password topic [replayFrom]");
+			if (null == System.getenv("SF_USER") || null == System.getenv("SF_PASS") || null == System.getenv("SF_TOPIC")) {
+				LOG.error("Usage: Set SF_USER, SF_PASS and SF_TOPIC as environment variables to run");
 				System.exit(1);
 			}
+
+			//if (args.length < 3 || args.length > 4) {
+			//	System.err.println("Usage: LoginExample username password topic [replayFrom]");
+			//	System.exit(1);
+			//}
+
 			long replayFrom = EmpConnector.REPLAY_FROM_EARLIEST;
-			if (args.length == 4) {
-				replayFrom = Long.parseLong(args[3]);
+			if (null != System.getenv("SF_REPLAY_FROM")) {
+				replayFrom = Long.parseLong(System.getenv("SF_REPLAY_FROM"));
 			}
+			//if (args.length == 4) {
+			//	replayFrom = Long.parseLong(args[3]);
+			//}
 
 			BearerTokenProvider tokenProvider = new BearerTokenProvider(() -> {
 				try {
-					return login(args[0], args[1]);
+					//return login(args[0], args[1]);
+					return login(System.getenv("SF_USER"), System.getenv("SF_PASS"));
 				} catch (Exception e) {
 					e.printStackTrace(System.err);
 					System.exit(1);
@@ -74,12 +88,12 @@ public class AuditlogsApplication {
 
 			Consumer<Map<String, Object>> consumer = event ->
 			{
-				System.out.println(String.format("AuditlogsApplication Received:\n%s", JSON.toString(event)));
-				System.out.println("AuditlogsApplication Event has started inserting in MangoDB");
+				LOG.info(String.format("AuditlogsApplication Received:\n%s", JSON.toString(event)));
+				LOG.info("AuditlogsApplication Event has started inserting in MangoDB");
 				Document document = Document.parse(JSON.toString(event));
-				System.out.println(String.format("AuditlogsApplication document:\n%s", document));
+				LOG.info(String.format("AuditlogsApplication document:\n%s", document));
 				table.insertOne(document);
-				System.out.println("AuditlogsApplication Event has been inserted in MangoDB");
+				LOG.info("AuditlogsApplication Event has been inserted in MangoDB");
 			};
 
 			EmpConnector connector = new EmpConnector(params);
@@ -88,7 +102,9 @@ public class AuditlogsApplication {
 
 			connector.start().get(5, TimeUnit.SECONDS);
 
-			TopicSubscription subscription = connector.subscribe(args[2], replayFrom, consumer).get(5, TimeUnit.SECONDS);
+			//TopicSubscription subscription = connector.subscribe(args[2], replayFrom, consumer).get(5, TimeUnit.SECONDS);
+			TopicSubscription subscription = connector.subscribe(System.getenv("SF_TOPIC"), replayFrom, consumer).get(5, TimeUnit.SECONDS);
+
 
 			System.out.println(String.format("AuditlogsApplication Subscribed: %s", subscription));
 
