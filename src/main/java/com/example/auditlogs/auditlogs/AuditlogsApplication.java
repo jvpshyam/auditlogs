@@ -55,28 +55,28 @@ public class AuditlogsApplication {
 			MongoDatabase database = mongoClient.getDatabase("auditlogs");
 			MongoCollection<Document> table = database.getCollection("events");
 
-			if (null == System.getenv("SF_USER") || null == System.getenv("SF_PASS") || null == System.getenv("SF_TOPIC")) {
-				LOG.error("Usage: Set SF_USER, SF_PASS and SF_TOPIC as environment variables to run");
-				System.exit(1);
-			}
-
-			//if (args.length < 3 || args.length > 4) {
-			//	System.err.println("Usage: LoginExample username password topic [replayFrom]");
+			//if (null == System.getenv("SF_USER") || null == System.getenv("SF_PASS") || null == System.getenv("SF_TOPIC")) {
+			//	LOG.error("Usage: Set SF_USER, SF_PASS and SF_TOPIC as environment variables to run");
 			//	System.exit(1);
 			//}
 
-			long replayFrom = EmpConnector.REPLAY_FROM_EARLIEST;
-			if (null != System.getenv("SF_REPLAY_FROM")) {
-				replayFrom = Long.parseLong(System.getenv("SF_REPLAY_FROM"));
+			if (args.length < 3 || args.length > 4) {
+				System.out.println("Usage: LoginExample username password topic [replayFrom]");
+				System.exit(1);
 			}
-			//if (args.length == 4) {
-			//	replayFrom = Long.parseLong(args[3]);
+
+			long replayFrom = EmpConnector.REPLAY_FROM_EARLIEST;
+			//if (null != System.getenv("SF_REPLAY_FROM")) {
+			//	replayFrom = Long.parseLong(System.getenv("SF_REPLAY_FROM"));
 			//}
+			if (args.length == 4) {
+				replayFrom = Long.parseLong(args[3]);
+			}
 
 			BearerTokenProvider tokenProvider = new BearerTokenProvider(() -> {
 				try {
-					//return login(args[0], args[1]);
-					return login(System.getenv("SF_USER"), System.getenv("SF_PASS"));
+					return login(args[0], args[1]);
+					//return login(System.getenv("SF_USER"), System.getenv("SF_PASS"));
 				} catch (Exception e) {
 					e.printStackTrace(System.err);
 					System.exit(1);
@@ -102,8 +102,8 @@ public class AuditlogsApplication {
 
 			connector.start().get(5, TimeUnit.SECONDS);
 
-			//TopicSubscription subscription = connector.subscribe(args[2], replayFrom, consumer).get(5, TimeUnit.SECONDS);
-			TopicSubscription subscription = connector.subscribe(System.getenv("SF_TOPIC"), replayFrom, consumer).get(5, TimeUnit.SECONDS);
+			TopicSubscription subscription = connector.subscribe(args[2], replayFrom, consumer).get(5, TimeUnit.SECONDS);
+			//TopicSubscription subscription = connector.subscribe(System.getenv("SF_TOPIC"), replayFrom, consumer).get(5, TimeUnit.SECONDS);
 
 
 			System.out.println(String.format("AuditlogsApplication Subscribed: %s", subscription));
@@ -119,6 +119,15 @@ public class AuditlogsApplication {
 			System.out.println("Exception Occurred : " + e);
 			e.printStackTrace();
 		}
+
+		// Worker Process
+        while(true) {
+            try {
+                Thread.sleep(1000);
+            } catch(InterruptedException e) {}
+
+            System.out.println("Worker process woke up");
+        }
 		//SpringApplication.run(AuditlogsApplication.class, args);
 	}
 

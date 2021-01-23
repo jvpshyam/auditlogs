@@ -1,1 +1,1 @@
-auditlogs: java -jar target/auditlogs-0.0.1-SNAPSHOT.jar
+worker: java -jar target/auditlogs-0.0.1-SNAPSHOT.jar jandhyala.shyam@tieto.com shyam1983 /data/Order__ChangeEvent
