@@ -72,6 +72,7 @@
 				<artifactId>heroku-maven-plugin</artifactId>
 				<version>3.0.3</version>
 				<configuration>
+					<appName>auditlogs-connector</appName>
 					<processTypes>
 						<worker>java $JAVA_OPTS -cp target/classes:target/dependency/* Main</worker>
 					</processTypes>
